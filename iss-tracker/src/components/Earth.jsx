@@ -1,19 +1,50 @@
-import React from "react";
-import { useLoader } from "@react-three/fiber";
+import React, { useRef, useEffect } from "react";
+import { useLoader, useThree } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
 import * as THREE from "three";
 import EarthClouds from "../assets/8k_earth_clouds.jpg";
 import EarthDayMap from "../assets/8k_earth_daymap.jpg";
-// import EarthNightMap from "../assets/8k_earth_nightmap.jpg";
 import EarthNormalMap from "../assets/8k_earth_normal_map.jpg";
 import EarthSpecularMap from "../assets/8k_earth_specular_map.jpg";
 import { TextureLoader } from "three";
 
-export function Earth(props) {
+export function Earth({ issPosition }) {
   const [colorMap, normalMap, specularMap, cloudsMap] = useLoader(
     TextureLoader,
     [EarthDayMap, EarthNormalMap, EarthSpecularMap, EarthClouds]
   );
+
+  const { scene } = useThree();
+  const issMarkerRef = useRef();
+
+  useEffect(() => {
+    // Initialize the ISS marker only once
+    const issGeometry = new THREE.SphereGeometry(0.05, 32, 32);
+    const issMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    issMarkerRef.current = new THREE.Mesh(issGeometry, issMaterial);
+    scene.add(issMarkerRef.current);
+  }, [scene]);
+
+  useEffect(() => {
+    // Update ISS marker position
+    const position = latLongToVector3(issPosition.lat, issPosition.long, 2.005);
+    if (issMarkerRef.current) {
+      issMarkerRef.current.position.set(position.x, position.y, position.z);
+    }
+  }, [issPosition]);
+
+  // This function converts geographic coordinates (latitude and longitude) into 3D Cartesian coordinates
+  function latLongToVector3(latitude, longitude, earthRadius) {
+    const phi = (90 - latitude) * (Math.PI / 180);
+    const theta = (longitude + 180) * (Math.PI / 180);
+
+    const x = -(earthRadius * Math.sin(phi) * Math.cos(theta));
+    const z = earthRadius * Math.sin(phi) * Math.sin(theta);
+    const y = earthRadius * Math.cos(phi);
+
+    return new THREE.Vector3(x, y, z);
+  }
+
   return (
     <>
       <ambientLight intensity={2} />
