@@ -1,10 +1,9 @@
 import React from "react";
 import "./App.css";
-import EarthGlobe from "./components/EarthGlobe.jsx";
 import styled from "styled-components";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
-import { Earth } from "./components/Earth.jsx";
+import Earth from "./components/Earth.jsx";
 
 const CanvasContainer = styled.div`
   width: 100%;
