@@ -1,14 +1,25 @@
 import React from "react";
 import "./App.css";
-import ISSTracker from "./components/ISSTracker.jsx";
+import EarthGlobe from "./components/EarthGlobe.jsx";
+import styled from "styled-components";
+import { Canvas } from "@react-three/fiber";
+import { Suspense } from "react";
+import { Earth } from "./components/Earth.jsx";
+
+const CanvasContainer = styled.div`
+  width: 100%;
+  height: 100%;
+`;
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <ISSTracker />
-      </header>
-    </div>
+    <CanvasContainer>
+      <Canvas>
+        <Suspense fallback={null}>
+          <Earth />
+        </Suspense>
+      </Canvas>
+    </CanvasContainer>
   );
 }
 
