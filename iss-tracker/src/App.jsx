@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Earth from "./components/Earth";
+import ISSTracker from "./components/ISSTracker";
+import localTLE from "./assets/localTLEData.txt";
 
 const CanvasContainer = styled.div`
   width: 100%;
@@ -11,30 +13,35 @@ const CanvasContainer = styled.div`
 `;
 
 function App() {
-  const [issPosition, setIssPosition] = useState({ lat: 0, long: 0 });
+  const [issTLE, setIssTLE] = useState(localTLE);
 
   useEffect(() => {
-    const fetchIssPosition = () => {
-      fetch("http://api.open-notify.org/iss-now.json")
-        .then((response) => response.json())
-        .then((data) => {
-          setIssPosition({
-            lat: parseFloat(data.iss_position.latitude),
-            long: parseFloat(data.iss_position.longitude),
-          });
-        })
-        .catch((error) => console.error("Error fetching ISS position:", error));
-    };
-
-    const intervalId = setInterval(fetchIssPosition, 5000); // Update ISS position every 5 seconds
-    return () => clearInterval(intervalId);
+    fetch("https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=tle")
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch TLE data");
+        return response.text();
+      })
+      .then((tleText) => {
+        const tleLines = tleText.trim().split("\n");
+        setIssTLE({ line1: tleLines[1], line2: tleLines[2] });
+      })
+      .catch(() => {
+        fetch(localTLE)
+          .then((response) => response.text())
+          .then((text) => {
+            const tleLines = text.trim().split("\n");
+            setIssTLE({ line1: tleLines[1], line2: tleLines[2] });
+          })
+          .catch((error) => console.error("Error loading local TLE:", error));
+      });
   }, []);
 
   return (
     <CanvasContainer>
       <Canvas>
         <Suspense fallback={null}>
-          <Earth issPosition={issPosition} />
+          <Earth />
+          <ISSTracker issTLE={issTLE} />
         </Suspense>
       </Canvas>
     </CanvasContainer>
