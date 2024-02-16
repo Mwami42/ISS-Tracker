@@ -1,0 +1,8 @@
+runtime: nodejs21
+env: standard
+
+automatic_scaling:
+  min_idle_instances: auto
+  max_idle_instances: auto
+
+network: {}

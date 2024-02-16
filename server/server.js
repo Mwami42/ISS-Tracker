@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080; // 8080 as a default value if process.env.PORT is not set
 const TLE_URL =
   "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=tle";
 const TLE_FILE_PATH = path.join("./data", "localTLEData.txt");
@@ -62,4 +62,6 @@ app.get("/", (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
