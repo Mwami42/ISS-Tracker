@@ -3,12 +3,21 @@ import fetch from "node-fetch";
 import cron from "node-cron";
 import fs from "fs";
 import path from "path";
+import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 8080; // 8080 as a default value if process.env.PORT is not set
 const TLE_URL =
   "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=tle";
 const TLE_FILE_PATH = path.join("./data", "localTLEData.txt");
+
+// CORS configuration
+const corsOptions = {
+  origin: "http://localhost:5173",
+  // For production, replace with client's domain
+};
+
+app.use(cors(corsOptions));
 
 const fetchAndSaveTLE = async () => {
   const response = await fetch(TLE_URL);

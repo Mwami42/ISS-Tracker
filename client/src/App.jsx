@@ -16,23 +16,20 @@ function App() {
   const [issTLE, setIssTLE] = useState(localTLE);
 
   useEffect(() => {
-    fetch("https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=tle")
+    fetch("https://phrasal-waters-414515.ew.r.appspot.com/api/tle") // You probably need to verify this API endpoint when deploying client (Maybe use relative URL) (- Your future self)
       .then((response) => {
         if (!response.ok) throw new Error("Failed to fetch TLE data");
-        return response.text();
+        return response.json();
       })
-      .then((tleText) => {
-        const tleLines = tleText.trim().split("\n");
-        setIssTLE({ line1: tleLines[1], line2: tleLines[2] });
+      .then((data) => {
+        setIssTLE({ line1: data.line2, line2: data.line3 }); // Use line2 and line3 from the response
+        console.log(`${data.line3}`);
       })
-      .catch(() => {
-        fetch(localTLE)
-          .then((response) => response.text())
-          .then((text) => {
-            const tleLines = text.trim().split("\n");
-            setIssTLE({ line1: tleLines[1], line2: tleLines[2] });
-          })
-          .catch((error) => console.error("Error loading local TLE:", error));
+      .catch((error) => {
+        console.error("Error fetching TLE data from server:", error);
+        // Fallback to local TLE data if the server request fails
+        const tleLines = localTLE.trim().split("\n");
+        setIssTLE({ line1: tleLines[0], line2: tleLines[1] });
       });
   }, []);
 

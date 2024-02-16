@@ -9,6 +9,7 @@
   "dependencies": {
     "@react-three/drei": "^9.97.5",
     "@react-three/fiber": "^8.15.16",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
