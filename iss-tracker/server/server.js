@@ -57,5 +57,9 @@ app.get("/api/tle", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to the ISS Tracker API" });
+});
+
 // Start the server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
