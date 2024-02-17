@@ -5,6 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Earth from "./components/Earth";
 import ISSTracker from "./components/ISSTracker";
+import ISSInfoBox from "./components/ISSInfoBox/ISSInfoBox";
 
 const CanvasContainer = styled.div`
   width: 100%;
@@ -77,6 +78,7 @@ function App() {
             <ISSTracker issTLE={issTLE} />
           </Suspense>
         </Canvas>
+        <ISSInfoBox issTLE={issTLE} />
       </CanvasContainer>
     </>
   );
