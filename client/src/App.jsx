@@ -21,7 +21,7 @@ function App() {
         return response.json();
       })
       .then((data) => {
-        setIssTLE({ line1: data.line2, line2: data.line3 });
+        setIssTLE({ line1: data.line1, line2: data.line2 });
       })
       .catch((error) => {
         console.error("Error fetching TLE data from server:", error);
