@@ -3,12 +3,14 @@ import fetch from "node-fetch";
 import cron from "node-cron";
 import cors from "cors";
 import { Datastore } from "@google-cloud/datastore";
+import * as satellite from "satellite.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 const TLE_URL =
   "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=tle";
 const datastore = new Datastore();
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
 app.use(cors({ origin: "http://localhost:5173" })); // Update for production
 
@@ -60,6 +62,43 @@ app.get("/api/tle", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error handling TLE data", error: err.message });
+  }
+});
+
+app.get("/api/location", async (req, res) => {
+  const key = datastore.key([TLE_KIND, "latest"]);
+  const [entity] = await datastore.get(key);
+
+  if (!entity) {
+    return res.status(404).json({ message: "TLE data not found" });
+  }
+
+  const { line1, line2 } = entity;
+  const satrec = satellite.twoline2satrec(line1, line2);
+  const positionAndVelocity = satellite.propagate(satrec, new Date());
+  const positionEci = positionAndVelocity.position;
+  const gmst = satellite.gstime(new Date());
+  const positionGd = satellite.eciToGeodetic(positionEci, gmst);
+
+  const latitude = satellite.degreesLat(positionGd.latitude);
+  const longitude = satellite.degreesLong(positionGd.longitude);
+
+  const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`;
+
+  try {
+    const geocodeResponse = await fetch(geocodeUrl);
+    const geocodeData = await geocodeResponse.json();
+
+    if (geocodeData.status === "OK" && geocodeData.results[0]) {
+      const locationName = geocodeData.results[0].formatted_address;
+      res.json({ geocodeData });
+    } else {
+      res.status(404).json({ message: "Location not found" });
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching location", error: error.message });
   }
 });
 
