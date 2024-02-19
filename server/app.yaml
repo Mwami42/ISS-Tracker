@@ -1,8 +1,0 @@
-runtime: nodejs20
-env: standard
-
-automatic_scaling:
-  min_idle_instances: 0
-  max_idle_instances: 1
-
-network: {}
