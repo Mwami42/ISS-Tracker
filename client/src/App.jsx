@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import Earth from "./components/Earth";
 import ISSTracker from "./components/ISSTracker";
 import ISSInfoBox from "./components/ISSInfoBox/ISSInfoBox";
+import LocationInfoBox from "./components/LocationInfoBox/LocationInfoBox";
 
 const CanvasContainer = styled.div`
   width: 100%;
@@ -79,6 +80,7 @@ function App() {
           </Suspense>
         </Canvas>
         <ISSInfoBox issTLE={issTLE} />
+        <LocationInfoBox issTLE={issTLE} />
       </CanvasContainer>
     </>
   );
