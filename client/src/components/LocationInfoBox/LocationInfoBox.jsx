@@ -1,10 +1,10 @@
-// LocationInfoBox.jsx
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as satellite from "satellite.js";
 import * as turf from "@turf/turf";
-import geojsonData from "./custom.geo.json"; // Adjust the path to your GeoJSON data
-import "./LocationInfoBox.css"; // Adjust the path according to your file structure
+import geojsonData from "./land.geo.json";
+import oceanData from "./GeoOceansAndSeasV2.geo.json";
+import "./LocationInfoBox.css";
 
 const InfoBoxContainer = styled.div`
   position: absolute;
@@ -37,9 +37,15 @@ const LocationInfoBox = ({ issTLE }) => {
         const longitude = satellite.degreesLong(positionGd.longitude);
         const point = turf.point([longitude, latitude]);
 
-        const matchedFeature = geojsonData.features.find((feature) =>
+        let matchedFeature = geojsonData.features.find((feature) =>
           turf.booleanPointInPolygon(point, feature)
         );
+
+        if (!matchedFeature) {
+          matchedFeature = oceanData.features.find((feature) =>
+            turf.booleanPointInPolygon(point, feature)
+          );
+        }
 
         setLocationName(
           matchedFeature ? matchedFeature.properties.name : "Unknown location"
@@ -47,13 +53,12 @@ const LocationInfoBox = ({ issTLE }) => {
       }
     };
 
-    updateLocation(); // Initial update
-    const intervalId = setInterval(updateLocation, 1000); // Update every second
+    updateLocation();
+    const intervalId = setInterval(updateLocation, 1000);
 
-    return () => clearInterval(intervalId); // Cleanup on component unmount
+    return () => clearInterval(intervalId);
   }, [issTLE]);
 
-  // Within your LocationInfoBox component's return statement
   return <div className="InfoBoxContainer">{locationName}</div>;
 };
 
