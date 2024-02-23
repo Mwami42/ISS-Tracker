@@ -36,13 +36,23 @@ const ISSInfoBox = ({ issTLE }) => {
           positionAndVelocity.velocity.x ** 2 +
             positionAndVelocity.velocity.y ** 2 +
             positionAndVelocity.velocity.z ** 2
-        ) * 60; // Convert from km/s to km/min
+        ) *
+        60 *
+        60; // Convert from km/s to km/h by multiplying with 3600
 
       setIssData({
-        latitude: satellite.degreesLat(positionGd.latitude).toFixed(2),
-        longitude: satellite.degreesLong(positionGd.longitude).toFixed(2),
+        latitude: `${Math.abs(
+          satellite.degreesLat(positionGd.latitude)
+        ).toFixed(2)}${
+          satellite.degreesLat(positionGd.latitude) >= 0 ? "N" : "S"
+        }`,
+        longitude: `${Math.abs(
+          satellite.degreesLong(positionGd.longitude)
+        ).toFixed(2)}${
+          satellite.degreesLong(positionGd.longitude) >= 0 ? "E" : "W"
+        }`,
         altitude: positionGd.height.toFixed(2), // Altitude in kilometers
-        velocity: velocity.toFixed(2), // Velocity in km/min
+        velocity: velocity.toFixed(0), // Velocity in km/h
       });
     }
   };
@@ -58,7 +68,7 @@ const ISSInfoBox = ({ issTLE }) => {
       <div>Latitude: {issData.latitude}</div>
       <div>Longitude: {issData.longitude}</div>
       <div>Altitude: {issData.altitude} km</div>
-      <div>Velocity: {issData.velocity} km/min</div>
+      <div>Velocity: {issData.velocity} km/h</div>
     </InfoBox>
   );
 };
