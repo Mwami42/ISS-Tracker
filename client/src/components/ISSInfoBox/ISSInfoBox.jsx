@@ -1,16 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as satellite from "satellite.js";
-
-const InfoBox = styled.div`
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-`;
+import "./ISSInfoBox.css";
 
 const ISSInfoBox = ({ issTLE }) => {
   const [issData, setIssData] = useState({
@@ -64,12 +55,13 @@ const ISSInfoBox = ({ issTLE }) => {
   }, [issTLE]);
 
   return (
-    <InfoBox>
-      <div>Latitude: {issData.latitude}</div>
-      <div>Longitude: {issData.longitude}</div>
-      <div>Altitude: {issData.altitude} km</div>
-      <div>Velocity: {issData.velocity} km/h</div>
-    </InfoBox>
+    <div className="iss-info-box">
+      <div className="iss-info-header">ISS Tracker Info</div>
+      <div className="iss-info-content">Latitude: {issData.latitude}</div>
+      <div className="iss-info-content">Longitude: {issData.longitude}</div>
+      <div className="iss-info-content">Altitude: {issData.altitude} km</div>
+      <div className="iss-info-content">Velocity: {issData.velocity} km/h</div>
+    </div>
   );
 };
 
