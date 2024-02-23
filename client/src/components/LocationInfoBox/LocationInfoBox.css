@@ -1,16 +1,14 @@
-.InfoBoxContainer {
+.location-info-box {
   position: absolute;
-  top: 10px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #f9f9f9;
-  color: #333;
-  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: Arial, sans-serif;
+  border: 2px solid #007bff;
+  color: #007bff;
+  font-family: "Arial", sans-serif;
+  text-align: center;
+  z-index: 100;
 }

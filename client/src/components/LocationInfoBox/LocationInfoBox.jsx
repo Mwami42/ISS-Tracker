@@ -59,7 +59,7 @@ const LocationInfoBox = ({ issTLE }) => {
     return () => clearInterval(intervalId);
   }, [issTLE]);
 
-  return <div className="InfoBoxContainer">{locationName}</div>;
+  return <div className="location-info-box">{locationName}</div>;
 };
 
 export default LocationInfoBox;
