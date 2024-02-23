@@ -10,6 +10,7 @@ const ISSInfoBox = ({ issTLE }) => {
     altitude: "",
     velocity: "",
   });
+  const [isMetric, setIsMetric] = useState(true);
 
   const updateIssData = () => {
     if (issTLE.line1 && issTLE.line2) {
@@ -48,19 +49,56 @@ const ISSInfoBox = ({ issTLE }) => {
     }
   };
 
+  const toggleUnits = () => {
+    setIsMetric(!isMetric); // Toggle between metric and imperial units
+  };
+
   useEffect(() => {
     const intervalId = setInterval(updateIssData, 1000); // Update every second
 
     return () => clearInterval(intervalId);
   }, [issTLE]);
 
+  const formattedData = {
+    // Convert and format data based on the selected unit system
+    altitude: isMetric
+      ? `${issData.altitude} km`
+      : `${(issData.altitude * 0.621371).toFixed(0)} miles`,
+    velocity: isMetric
+      ? `${issData.velocity} km/h`
+      : `${(issData.velocity * 0.621371).toFixed(0)} mph`,
+  };
+
   return (
     <div className="iss-info-box">
       <div className="iss-info-header">ISS Tracker Info</div>
       <div className="iss-info-content">Latitude: {issData.latitude}</div>
       <div className="iss-info-content">Longitude: {issData.longitude}</div>
-      <div className="iss-info-content">Altitude: {issData.altitude} km</div>
-      <div className="iss-info-content">Velocity: {issData.velocity} km/h</div>
+      <div className="iss-info-content">Altitude: {formattedData.altitude}</div>
+      <div className="iss-info-content">Velocity: {formattedData.velocity}</div>
+      <div className="unit-toggle-container">
+        <label className="switch">
+          {
+            <div className="unit-toggle">
+              <input
+                type="checkbox"
+                id="unit-toggle-checkbox"
+                className="unit-toggle-checkbox"
+                checked={!isMetric}
+                onChange={toggleUnits}
+              />
+              <label
+                className="unit-toggle-label"
+                htmlFor="unit-toggle-checkbox"
+              >
+                <span className="unit-toggle-inner" />
+                <span className="unit-toggle-switch" />
+              </label>
+            </div>
+          }
+        </label>
+        <div className="unit-text">Metric / Imperial</div>
+      </div>
     </div>
   );
 };

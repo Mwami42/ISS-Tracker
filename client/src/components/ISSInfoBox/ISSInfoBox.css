@@ -24,3 +24,72 @@
   font-size: 1em;
   color: #333;
 }
+
+.unit-toggle {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  margin: 10px 0;
+}
+
+.unit-toggle-checkbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.unit-toggle-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #007bff;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.unit-toggle-inner {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 20px;
+}
+
+.unit-toggle-checkbox:checked + .unit-toggle-label {
+  background-color: #007bff;
+}
+
+.unit-toggle-switch {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #007bff;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.unit-toggle-checkbox:checked + .unit-toggle-label .unit-toggle-switch {
+  transform: translateX(26px);
+}
+
+.unit-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.unit-text {
+  margin-left: 8px;
+  color: black;
+  font-size: 12px;
+}
