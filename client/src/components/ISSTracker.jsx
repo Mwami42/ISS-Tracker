@@ -44,32 +44,71 @@ const ISSTracker = ({ issTLE }) => {
   }, [issTLE]);
 
   useEffect(() => {
-    let orbitPoints = [];
-    if (!issTLE.line1 || !issTLE.line2) return;
-    const satrec = satellite.twoline2satrec(issTLE.line1, issTLE.line2);
-    for (let i = -90; i <= 90; i += 5) {
-      const time = new Date(new Date().getTime() + i * 60000);
+    const updateOrbit = () => {
+      let orbitPoints = [];
+      let pastOrbitPoints = [];
+      let futureOrbitPoints = [];
+      const currentTime = new Date();
 
-      const { position } = satellite.propagate(satrec, time);
-      if (position) {
-        const gmst = satellite.gstime(time);
-        const geodeticCoords = satellite.eciToGeodetic(position, gmst);
-        const lat = satellite.degreesLat(geodeticCoords.latitude);
-        const lon = satellite.degreesLong(geodeticCoords.longitude);
-        const pos = latLongToVector3(lat, lon, 2.005 + 0.05);
-        orbitPoints.push(new THREE.Vector3(pos.x, pos.y, pos.z));
+      if (!issTLE.line1 || !issTLE.line2) return;
+      const satrec = satellite.twoline2satrec(issTLE.line1, issTLE.line2);
+
+      for (let i = -90; i <= 90; i += 1) {
+        const time = new Date(currentTime.getTime() + i * 60000); // i minutes from now
+
+        const { position } = satellite.propagate(satrec, time);
+        if (position) {
+          const gmst = satellite.gstime(time);
+          const geodeticCoords = satellite.eciToGeodetic(position, gmst);
+          const lat = satellite.degreesLat(geodeticCoords.latitude);
+          const lon = satellite.degreesLong(geodeticCoords.longitude);
+          const pos = latLongToVector3(lat, lon, 2.005 + 0.05); // Assuming earth radius + altitude
+          orbitPoints.push({
+            time: time,
+            position: new THREE.Vector3(pos.x, pos.y, pos.z),
+          });
+        }
       }
-    }
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff });
-    const orbitLine = new THREE.Line(geometry, material);
-    scene.add(orbitLine);
+      // Find the current position index
+      const currentIndex = orbitPoints.findIndex(
+        (point) => point.time >= currentTime
+      );
+
+      // Split into past and future
+      pastOrbitPoints = orbitPoints
+        .slice(0, currentIndex + 1)
+        .map((point) => point.position); // +1 includes current position in past
+      futureOrbitPoints = orbitPoints
+        .slice(currentIndex)
+        .map((point) => point.position); // starts from current position
+
+      // Create the past trajectory line
+      const pastGeometry = new THREE.BufferGeometry().setFromPoints(
+        pastOrbitPoints
+      );
+      const pastMaterial = new THREE.LineBasicMaterial({ color: 0xffff00 });
+      const pastOrbitLine = new THREE.Line(pastGeometry, pastMaterial);
+
+      // Create the future trajectory line
+      const futureGeometry = new THREE.BufferGeometry().setFromPoints(
+        futureOrbitPoints
+      );
+      const futureMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+      const futureOrbitLine = new THREE.Line(futureGeometry, futureMaterial);
+
+      scene.add(pastOrbitLine);
+      scene.add(futureOrbitLine);
+    };
+
+    updateOrbit();
+
+    const intervalId = setInterval(updateOrbit, 1000);
 
     return () => {
-      scene.remove(orbitLine);
+      clearInterval(intervalId);
     };
-  }, [issTLE]);
+  }, [issTLE]); // Dependency array
 
   function latLongToVector3(latitude, longitude, earthRadius) {
     const phi = (90 - latitude) * (Math.PI / 180);
