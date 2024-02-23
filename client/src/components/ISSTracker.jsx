@@ -44,11 +44,17 @@ const ISSTracker = ({ issTLE }) => {
   }, [issTLE]);
 
   useEffect(() => {
+    let pastOrbitLine;
+    let futureOrbitLine;
+
     const updateOrbit = () => {
       let orbitPoints = [];
       let pastOrbitPoints = [];
       let futureOrbitPoints = [];
       const currentTime = new Date();
+
+      if (pastOrbitLine) scene.remove(pastOrbitLine);
+      if (futureOrbitLine) scene.remove(futureOrbitLine);
 
       if (!issTLE.line1 || !issTLE.line2) return;
       const satrec = satellite.twoline2satrec(issTLE.line1, issTLE.line2);
@@ -88,14 +94,14 @@ const ISSTracker = ({ issTLE }) => {
         pastOrbitPoints
       );
       const pastMaterial = new THREE.LineBasicMaterial({ color: 0xffff00 });
-      const pastOrbitLine = new THREE.Line(pastGeometry, pastMaterial);
+      pastOrbitLine = new THREE.Line(pastGeometry, pastMaterial);
 
       // Create the future trajectory line
       const futureGeometry = new THREE.BufferGeometry().setFromPoints(
         futureOrbitPoints
       );
       const futureMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-      const futureOrbitLine = new THREE.Line(futureGeometry, futureMaterial);
+      futureOrbitLine = new THREE.Line(futureGeometry, futureMaterial);
 
       scene.add(pastOrbitLine);
       scene.add(futureOrbitLine);
