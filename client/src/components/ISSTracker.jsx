@@ -43,9 +43,37 @@ const ISSTracker = ({ issTLE }) => {
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [issTLE]);
 
+  function createArrowhead(color) {
+    const arrowShape = new THREE.Shape()
+      .moveTo(0, 0)
+      .lineTo(-0.5, -1)
+      .lineTo(0.5, -1)
+      .lineTo(0, 0); // This creates a simple triangle shape
+
+    const geometry = new THREE.ShapeGeometry(arrowShape);
+    const material = new THREE.MeshBasicMaterial({
+      color: color,
+      side: THREE.DoubleSide, // Render both sides of the arrow
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+
+    mesh.scale.set(0.1, 0.1, 0.1); // Adjust the scale to make the arrow smaller
+
+    return mesh;
+  }
+
+  // Adjusting the orientation of the arrowheads
+  function orientArrow(arrow, dir, normal) {
+    arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+    const arrowDir = new THREE.Vector3().crossVectors(normal, dir).normalize();
+    arrow.rotateOnWorldAxis(arrowDir, Math.PI / 2);
+  }
+
   useEffect(() => {
     let pastOrbitLine;
     let futureOrbitLine;
+    let pastArrowhead;
+    let futureArrowhead;
 
     const updateOrbit = () => {
       let orbitPoints = [];
@@ -55,6 +83,8 @@ const ISSTracker = ({ issTLE }) => {
 
       if (pastOrbitLine) scene.remove(pastOrbitLine);
       if (futureOrbitLine) scene.remove(futureOrbitLine);
+      if (pastArrowhead) scene.remove(pastArrowhead);
+      if (futureArrowhead) scene.remove(futureArrowhead);
 
       if (!issTLE.line1 || !issTLE.line2) return;
       const satrec = satellite.twoline2satrec(issTLE.line1, issTLE.line2);
@@ -68,7 +98,7 @@ const ISSTracker = ({ issTLE }) => {
           const geodeticCoords = satellite.eciToGeodetic(position, gmst);
           const lat = satellite.degreesLat(geodeticCoords.latitude);
           const lon = satellite.degreesLong(geodeticCoords.longitude);
-          const pos = latLongToVector3(lat, lon, 2.005 + 0.05); // Assuming earth radius + altitude
+          const pos = latLongToVector3(lat, lon, 2.005 + 0.05);
           orbitPoints.push({
             time: time,
             position: new THREE.Vector3(pos.x, pos.y, pos.z),
@@ -84,7 +114,7 @@ const ISSTracker = ({ issTLE }) => {
       // Split into past and future
       pastOrbitPoints = orbitPoints
         .slice(0, currentIndex + 1)
-        .map((point) => point.position); // +1 includes current position in past
+        .map((point) => point.position);
       futureOrbitPoints = orbitPoints
         .slice(currentIndex)
         .map((point) => point.position); // starts from current position
@@ -103,6 +133,34 @@ const ISSTracker = ({ issTLE }) => {
       const futureMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
       futureOrbitLine = new THREE.Line(futureGeometry, futureMaterial);
 
+      const pastDir = new THREE.Vector3()
+        .subVectors(pastOrbitPoints[0], pastOrbitPoints[1])
+        .normalize();
+      const pastNormal = pastOrbitPoints[0].clone().normalize();
+      pastArrowhead = createArrowhead(0xffff00);
+      orientArrow(pastArrowhead, pastDir, pastNormal);
+      pastArrowhead.position.copy(pastOrbitPoints[0]);
+
+      // Orient and position the future arrowhead
+      const futureDir = new THREE.Vector3()
+        .subVectors(
+          futureOrbitPoints[futureOrbitPoints.length - 1],
+          futureOrbitPoints[futureOrbitPoints.length - 2]
+        )
+        .normalize();
+      const futureNormal = futureOrbitPoints[futureOrbitPoints.length - 1]
+        .clone()
+        .normalize();
+      futureArrowhead = createArrowhead(0xffffff);
+      orientArrow(futureArrowhead, futureDir, futureNormal);
+      futureArrowhead.position.copy(
+        futureOrbitPoints[futureOrbitPoints.length - 1]
+      );
+
+      // Add arrowheads to the scene
+      scene.add(pastArrowhead);
+      scene.add(futureArrowhead);
+
       scene.add(pastOrbitLine);
       scene.add(futureOrbitLine);
     };
@@ -114,7 +172,7 @@ const ISSTracker = ({ issTLE }) => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [issTLE]); // Dependency array
+  }, [issTLE]);
 
   function latLongToVector3(latitude, longitude, earthRadius) {
     const phi = (90 - latitude) * (Math.PI / 180);
