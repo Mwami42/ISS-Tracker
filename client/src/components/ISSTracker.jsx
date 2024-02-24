@@ -6,16 +6,31 @@ import { useThree } from "@react-three/fiber";
 const ISSTracker = ({ issTLE }) => {
   const { scene } = useThree();
   const issMarkerRef = useRef();
-  console.log(`Line1: ${issTLE.line1}`);
+  const markerAnimationRef = useRef({ scale: 1.0, opacity: 0.6 });
 
   useEffect(() => {
-    const issGeometry = new THREE.SphereGeometry(0.05, 32, 32);
-    const issMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    issMarkerRef.current = new THREE.Mesh(issGeometry, issMaterial);
+    const pingMaterial = new THREE.MeshBasicMaterial({
+      color: 0x007bff,
+      transparent: true,
+      opacity: markerAnimationRef.current.opacity,
+      side: THREE.DoubleSide,
+    });
+    const pingGeometry = new THREE.CircleGeometry(0.1, 32);
+    issMarkerRef.current = new THREE.Mesh(pingGeometry, pingMaterial);
     scene.add(issMarkerRef.current);
+
+    return () => {
+      pingGeometry.dispose();
+      pingMaterial.dispose();
+      if (issMarkerRef.current) {
+        scene.remove(issMarkerRef.current);
+      }
+    };
   }, [scene]);
 
   useEffect(() => {
+    let scale = 0.5;
+
     const updatePosition = () => {
       if (!issTLE.line1 || !issTLE.line2) return;
 
@@ -35,12 +50,32 @@ const ISSTracker = ({ issTLE }) => {
           issPosition.y,
           issPosition.z
         );
+        const radialVector = issMarkerRef.current.position.clone().normalize();
+        issMarkerRef.current.up.copy(radialVector); // Align the 'up' vector with the radial vector
+        issMarkerRef.current.lookAt(scene.position);
       }
     };
 
-    const intervalId = setInterval(updatePosition, 1000); // Update every seconds
+    const updateAnimation = () => {
+      const animation = markerAnimationRef.current;
+      animation.scale += 0.02;
+      if (animation.scale > 0.7) {
+        animation.scale = 0.1;
+        animation.opacity = 0.6;
+      } else {
+        animation.opacity = 0.6 * (1 - (animation.scale - 1));
+      }
 
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+      if (issMarkerRef.current) {
+        issMarkerRef.current.scale.set(animation.scale, animation.scale, 1);
+        issMarkerRef.current.material.opacity = animation.opacity;
+      }
+    };
+
+    const intervalId = setInterval(updatePosition, 1000);
+    const intervalIdAnimation = setInterval(updateAnimation, 10);
+
+    return () => clearInterval(intervalId, intervalIdAnimation);
   }, [issTLE]);
 
   function createArrowhead(color) {
