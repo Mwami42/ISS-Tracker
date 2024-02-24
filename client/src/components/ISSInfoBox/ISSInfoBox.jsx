@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 import * as satellite from "satellite.js";
 import "./ISSInfoBox.css";
 
@@ -11,6 +10,20 @@ const ISSInfoBox = ({ issTLE }) => {
     velocity: "",
   });
   const [isMetric, setIsMetric] = useState(true);
+  const [currentTime, setCurrentTime] = useState("");
+
+  const updateTime = () => {
+    const now = new Date();
+    const timeString = now.toUTCString();
+    setCurrentTime(timeString.slice(5, -4));
+  };
+
+  useEffect(() => {
+    updateTime();
+    const timeInterval = setInterval(updateTime, 1000);
+
+    return () => clearInterval(timeInterval);
+  }, []);
 
   const updateIssData = () => {
     if (issTLE.line1 && issTLE.line2) {
@@ -76,6 +89,7 @@ const ISSInfoBox = ({ issTLE }) => {
       <div className="iss-info-content">Longitude: {issData.longitude}</div>
       <div className="iss-info-content">Altitude: {formattedData.altitude}</div>
       <div className="iss-info-content">Velocity: {formattedData.velocity}</div>
+      <div className="iss-info-content">Time (GMT): {currentTime}</div>
       <div className="unit-toggle-container">
         <label className="switch">
           {
