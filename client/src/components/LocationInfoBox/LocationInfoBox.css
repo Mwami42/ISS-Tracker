@@ -1,0 +1,14 @@
+.location-info-box {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 2px solid #007bff;
+  color: #007bff;
+  font-family: "Arial", sans-serif;
+  text-align: center;
+  z-index: 100;
+}
