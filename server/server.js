@@ -11,7 +11,21 @@ const TLE_URL =
 const datastore = new Datastore();
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
-app.use(cors({ origin: "http://localhost:5173" })); // Update for production
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "http://localhost:5173", // Update for production
+        "https://mwami42.github.io",
+      ];
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  })
+);
 
 const TLE_KIND = "TLEData";
 
